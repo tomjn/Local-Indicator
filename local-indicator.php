@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Local Indicator
-Plugin URI: http://wordpress.org/extend/plugins/hello-dolly/
+Plugin URI: http://tomjn.com
 Description: Indicates when a site is used locally via a dashed broder on the top admin bar, useful for tellign Live and Local dev environments apart
 Author: Tom J Nowell, Interconnect/IT
 Version: 1.0
