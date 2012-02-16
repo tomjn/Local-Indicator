@@ -11,7 +11,7 @@ Author URI: http://tomjn.com/
 add_action('admin_head', 'tomjn_top_border');
 
 function tomjn_top_border() {
-	if($_SERVER['SERVER_ADDR'] == '127.0.0.1'){
+	if(($_SERVER['REMOTE_ADDR'] == '127.0.0.1')||($_SERVER['SERVER_ADDR'] == $_SERVER['REMOTE_ADDR'])){
 		?>
 		<style type="text/css">
 			#wpadminbar  { border-top: 3px dashed  #DBCF00; }
