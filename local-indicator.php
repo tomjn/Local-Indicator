@@ -8,8 +8,6 @@ Version: 1.1
 Author URI: http://tomjn.com/
 */
 
-add_action('admin_head', 'tomjn_top_border');
-
 
 // add links/menus to the admin bar
 function tomjn_indicator_admin_bar_render() {
