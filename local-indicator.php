@@ -17,7 +17,7 @@ function tomjn_indicator_admin_bar_render() {
 	$wp_admin_bar->add_menu( array(
 		'parent' => false, // use 'false' for a root menu, or pass the ID of the parent menu
 		'id' => 'server_ip', // link ID, defaults to a sanitized title value
-		'title' => '<span style="font-weight:bolder; color:'.icit_label_to_chart_colour($_SERVER['SERVER_ADD']).';">'.$_SERVER['SERVER_ADDR'].'</span>', // link title
+		'title' => '<span style="font-weight:bolder; color:'.icit_label_to_chart_colour($_SERVER['SERVER_ADDR']).';">'.$_SERVER['SERVER_ADDR'].'</span>', // link title
 		'href' => '#', // name of file
 		'meta' => FALSE //array('html' => '<span style="color:'.icit_label_to_chart_colour($_SERVER['SERVER_ADD']).';">'.$_SERVER['SERVER_ADDR'].'</span>')
 		// array of any of the following options: array( 'html' => '', 'class' => '', 'onclick' => '', target => '', title => '' );
