@@ -1,10 +1,10 @@
 === Local Indicator ===
 Contributors: TJNowell
-Donate link: 
-Tags: admin, development
+Donate link: http://www.tomjn.com
+Tags: admin, development, maintenance
 Requires at least: 3.3
 Tested up to: 3.4
-Stable tag: 1.1
+Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
