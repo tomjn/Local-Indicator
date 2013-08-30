@@ -3,18 +3,16 @@ Contributors: TJNowell
 Donate link: http://www.tomjn.com
 Tags: admin, development, maintenance
 Requires at least: 3.3
-Tested up to: 3.4
-Stable tag: trunk
+Tested up to: 3.5.1
+Stable tag: 1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A fast way of seeing which machine your WordPress install is running off of.
+A fast way of seeing which machine a WordPress install is running on.
 
 == Description ==
 
-A fast way of distinguishing between live, production, and local testing of s site.
-
-Administrators will see a colour coded IP and name of the server in he admin bar.
+An easy way of telling apart different installs of WordPress ( e.g. live/production/local ) via the admin bar. Super admins see a colour coded machine name in the admin bar, with an IP submenu. Mobiles will see a colour coded square dot
 
 == Installation ==
 

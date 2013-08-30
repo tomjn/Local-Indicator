@@ -4,39 +4,89 @@ Plugin Name: Local Indicator
 Plugin URI: http://tomjn.com
 Description: Indicates the current server used via a colour coded IP in the top admin bar, useful for telling live and Local dev environments apart
 Author: Tom J Nowell, Interconnect/IT
-Version: 1.3
+Version: 1.5
 Author URI: http://tomjn.com/
 */
 
 
-/**
- * add the link to the admin bar
- */
-function tomjn_indicator_admin_bar_render() {
-	if ( !is_super_admin() || !is_admin_bar_showing() )
-		return;
-	global $wp_admin_bar;
-	$colour = icit_label_to_chart_colour( $_SERVER['SERVER_ADDR'] );
-	$colour = apply_filters( 'tomjn_indicator_colour', $colour );
-	$indicator_text = $_SERVER['SERVER_ADDR'].' '.php_uname( 'n' );
-	$indicator_text = apply_filters( 'tomjn_indicator_text', $indicator_text );
-	$title = '<style>#wpadminbar .local-indicator { font-weight:bolder; color:'.$colour.';} @media only screen and (max-width : 640px) { #wpadminbar .local-indicator{ background: '.$colour.'; display:block; height:20px; width:20px; box-shadow: 0px 0px 10px black; margin-top:4px; text-indent:100%; overflow:hidden; border-radius:3px;} }</style>';
-	$title .= '<span class="local-indicator">'.$indicator_text.'</span>';
-	$wp_admin_bar->add_menu(
-		array(
-			'parent' => false,
-			'id' => 'server_ip',
-			'title' => $title, // link title
+class TomjnLocalIndicator {
+
+	public static $instance = null;
+
+	public static function get_instance() {
+		if ( !isset( $instance ) ) {
+			$instance = new self;
+		}
+		return $instance;
+	}
+
+	public function __construct() {
+		add_action( 'wp_before_admin_bar_render', array( $this, 'render' ) );
+	}
+	/**
+	 * add the link to the admin bar
+	 */
+	public function render() {
+		if ( !is_admin_bar_showing() )
+			return;
+
+		$capability = 'manage_options';
+
+		if ( is_multisite() ) {
+			$capability = 'manage_network_options';
+		}
+		$capability = apply_filters( 'tomjn_local_indicator_capability', $capability );
+		if ( !current_user_can( $capability ) ) {
+			return;
+		}
+
+		global $wp_admin_bar;
+		$colour = self::label_to_colour( $_SERVER['SERVER_ADDR'] );
+		$colour = apply_filters( 'tomjn_indicator_colour', $colour );
+		$indicator_text = php_uname( 'n' );
+		$indicator_text = apply_filters( 'tomjn_indicator_text', $indicator_text );
+		$title = '<style>#wpadminbar #wp-admin-bar-server_name,#wpadminbar #wp-admin-bar-server_name:hover, #wpadminbar .local-indicator, #wpadminbar #wp-admin-bar-server_name:hover ,#wpadminbar #wp-admin-bar-server_name:hover, #wpadminbar #wp-admin-bar-server_name:hover .local-indicator, #wpadminbar #wp-admin-bar-server_name .ab-submenu, #wpadminbar #wp-admin-bar-server_name .ab-submenu a, #wpadminbar .ab-top-menu>#wp-admin-bar-server_name:hover>.ab-item,#wpadminbar .ab-top-menu>#wp-admin-bar-server_name>.ab-item { font-weight:bolder; color:#fff; text-shadow:none; background:'.$colour.';} @media only screen and (max-width : 640px) { #wpadminbar .ab-top-menu>#wp-admin-bar-server_name>.ab-item { margin-top:-2px; width:20px; } #wpadminbar .local-indicator{ background: '.$colour.'; display:none;} }</style>';
+		$title .= '<span class="local-indicator">'.$indicator_text.'</span>';
+		$wp_admin_bar->add_menu(
+			array(
+				'parent' => false,
+				'id' => 'server_name',
+				'title' => $title, // link title
+				'href' => '#',
+				'meta' => FALSE,
+				'menu_id' => 'local_indicator'
+			)
+		);
+		$wp_admin_bar->add_menu( array(
+			'title' => $_SERVER['SERVER_ADDR'],
 			'href' => '#',
-			'meta' => FALSE
-		)
-	);
+			'parent' => 'server_name',
+			'meta' => FALSE,
+			'id' => 'server_ip'
+		));
+	}
+
+	public static function label_to_colour( $label ) {
+		$colour = substr( sha1( $label ), 0, 6 );
+		$colour = self::get_colour( $colour );
+		return $colour;
+	}
+
+	public static function get_colour( $hex ) {
+		$colour = HexToRGB( $hex );
+		$colour = rgb2hsl( $colour['r'], $colour['g'], $colour['b'] );
+		$colour[1] = 1.00;
+		$colour[2] = 0.67;
+		$colour = hsl2rgb( $colour[0], $colour[1], $colour[2] );
+		$colour = RGBToHex( $colour[0], $colour[1], $colour[2] );
+		return $colour;
+	}
 }
-add_action( 'wp_before_admin_bar_render', 'tomjn_indicator_admin_bar_render' );
+add_action( 'init', array( 'TomjnLocalIndicator', 'get_instance' ) );
 
 if ( !function_exists( 'HexToRGB' ) ) {
 	function HexToRGB( $hex ) {
-		$hex = ereg_replace( '#', '', $hex );
+		$hex = str_replace( '#', '', $hex );
 		$color = array();
 
 		if ( strlen( $hex ) == 3 ) {
@@ -145,22 +195,4 @@ if ( !function_exists( 'hsl2rgb' ) ) {
 	}
 }
 
-if ( !function_exists( 'icit_label_to_chart_colour' ) ) {
-	function icit_label_to_chart_colour( $label ) {
-		$colour = substr( sha1( $label ), 0, 6 );
-		$colour = icit_get_chart_colour( $colour );
-		return $colour;
-	}
-}
 
-if ( !function_exists( 'icit_get_chart_colour' ) ) {
-	function icit_get_chart_colour( $hex ) {
-		$colour = HexToRGB( $hex );
-		$colour = rgb2hsl( $colour['r'], $colour['g'], $colour['b'] );
-		$colour[1] = 0.35;
-		$colour[2] = 0.87;
-		$colour = hsl2rgb( $colour[0], $colour[1], $colour[2] );
-		$colour = RGBToHex( $colour[0], $colour[1], $colour[2] );
-		return $colour;
-	}
-}
