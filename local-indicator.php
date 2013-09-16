@@ -4,7 +4,7 @@ Plugin Name: Local Indicator
 Plugin URI: http://tomjn.com
 Description: Indicates the current server used via a colour coded IP in the top admin bar, useful for telling live and Local dev environments apart
 Author: Tom J Nowell, Interconnect/IT
-Version: 1.5
+Version: 1.6
 Author URI: http://tomjn.com/
 */
 
@@ -30,24 +30,31 @@ class TomjnLocalIndicator {
 		if ( !is_admin_bar_showing() )
 			return;
 
-		$capability = 'manage_options';
+		if ( !defined( 'LOCALINDICATOR_ALWAYS_SHOWING' ) || ( defined( 'LOCALINDICATOR_ALWAYS_SHOWING' ) && !LOCALINDICATOR_ALWAYS_SHOWING ) ) {
+			$capability = 'manage_options';
 
-		if ( is_multisite() ) {
-			$capability = 'manage_network_options';
-		}
-		$capability = apply_filters( 'tomjn_local_indicator_capability', $capability );
-		if ( !current_user_can( $capability ) ) {
-			return;
+			if ( is_multisite() ) {
+				$capability = 'manage_network_options';
+			}
+			$capability = apply_filters( 'tomjn_local_indicator_capability', $capability );
+			if ( !current_user_can( $capability ) ) {
+				return;
+			}
 		}
 
 		global $wp_admin_bar;
 		$colour = self::label_to_colour( $_SERVER['SERVER_ADDR'] );
 		$colour = apply_filters( 'tomjn_indicator_colour', $colour );
-		$indicator_text = php_uname( 'n' );
+		$indicator_text = '';
+		if ( defined( 'LOCALINDICATOR_TEXT' ) ) {
+			$indicator_text = LOCALINDICATOR_TEXT;
+		} else {
+			$indicator_text = php_uname( 'n' );
+		}
 		$indicator_text = apply_filters( 'tomjn_indicator_text', $indicator_text );
 		$title = '<style>#wpadminbar #wp-admin-bar-server_name,#wpadminbar #wp-admin-bar-server_name:hover, #wpadminbar .local-indicator, #wpadminbar #wp-admin-bar-server_name:hover ,#wpadminbar #wp-admin-bar-server_name:hover, #wpadminbar #wp-admin-bar-server_name:hover .local-indicator, #wpadminbar #wp-admin-bar-server_name .ab-submenu, #wpadminbar #wp-admin-bar-server_name .ab-submenu a, #wpadminbar .ab-top-menu>#wp-admin-bar-server_name:hover>.ab-item,#wpadminbar .ab-top-menu>#wp-admin-bar-server_name>.ab-item { font-weight:bolder; color:#fff; text-shadow:none; background:'.$colour.';} @media only screen and (max-width : 640px) { #wpadminbar .ab-top-menu>#wp-admin-bar-server_name>.ab-item { margin-top:-2px; width:20px; } #wpadminbar .local-indicator{ background: '.$colour.'; display:none;} }</style>';
 		$title .= '<span class="local-indicator">'.$indicator_text.'</span>';
-		$wp_admin_bar->add_menu(
+		$wp_admin_bar->add_node(
 			array(
 				'parent' => false,
 				'id' => 'server_name',
@@ -57,12 +64,28 @@ class TomjnLocalIndicator {
 				'menu_id' => 'local_indicator'
 			)
 		);
-		$wp_admin_bar->add_menu( array(
+		$uname = php_uname( 'n' );
+		$phpver = 'PHP v'.phpversion();
+		$wp_admin_bar->add_node( array(
+			'title' => $uname,
+			'href' => '#',
+			'parent' => 'server_name',
+			'meta' => FALSE,
+			'id' => 'server_uname'
+		));
+		$wp_admin_bar->add_node( array(
+			'title' => $phpver,
+			'href' => '#',
+			'parent' => 'server_name',
+			'meta' => FALSE,
+			'id' => 'server_php'
+		));
+		$wp_admin_bar->add_node( array(
 			'title' => $_SERVER['SERVER_ADDR'],
 			'href' => '#',
 			'parent' => 'server_name',
 			'meta' => FALSE,
-			'id' => 'server_ip'
+			'id' => 'server_addr'
 		));
 	}
 
