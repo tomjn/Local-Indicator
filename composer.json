@@ -1,0 +1,16 @@
+{
+    "name": "tomjn/local-indicator",
+    "description": "A fast way of seeing which machine a WordPress install is running on.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "Tom J Nowell",
+            "email": "contact@tomjn.com"
+        }
+    ],
+    "require"    : {
+        "composer/installers": "~1.0",
+        "php": ">=5.2.4"
+    }
+}
