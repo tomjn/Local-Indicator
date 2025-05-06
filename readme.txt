@@ -1,10 +1,10 @@
 === Local Indicator ===
 Contributors: TJNowell
-Donate link: http://www.tomjn.com
+Donate link: https://www.tomjn.com
 Tags: admin, development, maintenance
 Requires at least: 3.3
-Tested up to: 3.5.1
-Stable tag: 1.6
+Tested up to: 6.1.1
+Stable tag: 1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,11 @@ An easy way of telling apart different installs of WordPress ( e.g. live/product
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Upgrade Notice ==
+
+= 1.7 =
+
+ - Fixed PHP 8.1 deprecations
+ - Coding standards improvements
 
 = 1.6 =
 

@@ -1,43 +1,45 @@
 <?php
-/*
-Plugin Name: Local Indicator
-Plugin URI: http://tomjn.com
-Description: Indicates the current server used via a colour coded IP in the top admin bar, useful for telling live and Local dev environments apart
-Author: Tom J Nowell, Interconnect/IT
-Version: 1.6
-Author URI: http://tomjn.com/
-*/
-
+/**
+ * Plugin Name: Local Indicator
+ * Plugin URI: http://tomjn.com
+ * Description: Indicates the current server used via a colour coded IP in the top admin bar, useful for telling live and Local dev environments apart
+ * Author: Tom J Nowell
+ * Version: 1.7
+ * Author URI: https://tomjn.com/
+ */
 
 class TomjnLocalIndicator {
 
 	public static $instance = null;
 
-	public static function get_instance() {
-		if ( !isset( $instance ) ) {
+	public static function get_instance() : TomjnLocalIndicator {
+		if ( ! isset( $instance ) ) {
 			$instance = new self;
 		}
 		return $instance;
 	}
 
 	public function __construct() {
-		add_action( 'wp_before_admin_bar_render', array( $this, 'render' ) );
+		add_action( 'wp_before_admin_bar_render', [ $this, 'render' ] );
 	}
+
 	/**
 	 * add the link to the admin bar
 	 */
-	public function render() {
-		if ( !is_admin_bar_showing() )
+	public function render() : void {
+		if ( !is_admin_bar_showing() ) {
 			return;
+		}
 
-		if ( !defined( 'LOCALINDICATOR_ALWAYS_SHOWING' ) || ( defined( 'LOCALINDICATOR_ALWAYS_SHOWING' ) && !LOCALINDICATOR_ALWAYS_SHOWING ) ) {
+		if ( ! defined( 'LOCALINDICATOR_ALWAYS_SHOWING' ) || ( defined( 'LOCALINDICATOR_ALWAYS_SHOWING' ) && !LOCALINDICATOR_ALWAYS_SHOWING ) ) {
 			$capability = 'manage_options';
 
 			if ( is_multisite() ) {
 				$capability = 'manage_network_options';
 			}
+
 			$capability = apply_filters( 'tomjn_local_indicator_capability', $capability );
-			if ( !current_user_can( $capability ) ) {
+			if ( ! current_user_can( $capability ) ) {
 				return;
 			}
 		}
@@ -52,50 +54,48 @@ class TomjnLocalIndicator {
 			$indicator_text = php_uname( 'n' );
 		}
 		$indicator_text = apply_filters( 'tomjn_indicator_text', $indicator_text );
-		$title = '<style>#wpadminbar #wp-admin-bar-server_name,#wpadminbar #wp-admin-bar-server_name:hover, #wpadminbar .local-indicator, #wpadminbar #wp-admin-bar-server_name:hover ,#wpadminbar #wp-admin-bar-server_name:hover, #wpadminbar #wp-admin-bar-server_name:hover .local-indicator, #wpadminbar #wp-admin-bar-server_name .ab-submenu, #wpadminbar #wp-admin-bar-server_name .ab-submenu a, #wpadminbar .ab-top-menu>#wp-admin-bar-server_name:hover>.ab-item,#wpadminbar .ab-top-menu>#wp-admin-bar-server_name>.ab-item { font-weight:bolder; color:#fff; text-shadow:none; background:'.$colour.';} @media only screen and (max-width : 640px) { #wpadminbar .ab-top-menu>#wp-admin-bar-server_name>.ab-item { margin-top:-2px; width:20px; } #wpadminbar .local-indicator{ background: '.$colour.'; display:none;} }</style>';
-		$title .= '<span class="local-indicator">'.$indicator_text.'</span>';
-		$wp_admin_bar->add_node(
-			array(
-				'parent' => false,
-				'id' => 'server_name',
-				'title' => $title, // link title
-				'href' => '#',
-				'meta' => FALSE,
-				'menu_id' => 'local_indicator'
-			)
-		);
+		$title = '<style>#wpadminbar #wp-admin-bar-server_name,#wpadminbar #wp-admin-bar-server_name:hover, #wpadminbar .local-indicator, #wpadminbar #wp-admin-bar-server_name:hover ,#wpadminbar #wp-admin-bar-server_name:hover, #wpadminbar #wp-admin-bar-server_name:hover .local-indicator, #wpadminbar #wp-admin-bar-server_name .ab-submenu, #wpadminbar #wp-admin-bar-server_name .ab-submenu a, #wpadminbar .ab-top-menu>#wp-admin-bar-server_name:hover>.ab-item,#wpadminbar .ab-top-menu>#wp-admin-bar-server_name>.ab-item { font-weight:bolder; color:#fff; text-shadow:none; background:'.$colour.';} @media only screen and (max-width : 640px) { #wpadminbar .ab-top-menu>#wp-admin-bar-server_name>.ab-item { margin-top:-2px; width:20px; } #wpadminbar .local-indicator{ background: ' . esc_attr( $colour ) . '; display:none;} }</style>';
+		$title .= '<span class="local-indicator">' . wp_kses_post( $indicator_text ) . '</span>';
+		$wp_admin_bar->add_node( [
+			'parent' => false,
+			'id' => 'server_name',
+			'title' => $title, // link title.
+			'href' => '#',
+			'meta' => FALSE,
+			'menu_id' => 'local_indicator'
+		] );
 		$uname = php_uname( 'n' );
-		$phpver = 'PHP v'.phpversion();
-		$wp_admin_bar->add_node( array(
+		$phpver = 'PHP v' . phpversion();
+		$wp_admin_bar->add_node( [
 			'title' => $uname,
 			'href' => '#',
 			'parent' => 'server_name',
 			'meta' => FALSE,
 			'id' => 'server_uname'
-		));
-		$wp_admin_bar->add_node( array(
+		] );
+		$wp_admin_bar->add_node( [
 			'title' => $phpver,
 			'href' => '#',
 			'parent' => 'server_name',
 			'meta' => FALSE,
 			'id' => 'server_php'
-		));
-		$wp_admin_bar->add_node( array(
+		] );
+		$wp_admin_bar->add_node( [
 			'title' => $_SERVER['SERVER_ADDR'],
 			'href' => '#',
 			'parent' => 'server_name',
 			'meta' => FALSE,
 			'id' => 'server_addr'
-		));
+		] );
 	}
 
-	public static function label_to_colour( $label ) {
+	public static function label_to_colour( string $label ) : string {
 		$colour = substr( sha1( $label ), 0, 6 );
 		$colour = self::get_colour( $colour );
 		return $colour;
 	}
 
-	public static function get_colour( $hex ) {
+	public static function get_colour( string $hex ) : string {
 		$colour = HexToRGB( $hex );
 		$colour = rgb2hsl( $colour['r'], $colour['g'], $colour['b'] );
 		$colour[1] = 1.00;
@@ -105,30 +105,29 @@ class TomjnLocalIndicator {
 		return $colour;
 	}
 }
-add_action( 'init', array( 'TomjnLocalIndicator', 'get_instance' ) );
+add_action( 'init', [ 'TomjnLocalIndicator', 'get_instance' ] );
 
 if ( !function_exists( 'HexToRGB' ) ) {
-	function HexToRGB( $hex ) {
+	function HexToRGB( string $hex ) : array {
 		$hex = str_replace( '#', '', $hex );
-		$color = array();
+		$color = [];
 
 		if ( strlen( $hex ) == 3 ) {
 			$color['r'] = hexdec( substr( $hex, 0, 1 ) . substr( $hex, 0, 1 ) );
 			$color['g'] = hexdec( substr( $hex, 1, 1 ) . substr( $hex, 1, 1 ) );
 			$color['b'] = hexdec( substr( $hex, 2, 1 ) . substr( $hex, 2, 1 ) );
+		} else if ( strlen( $hex ) == 6 ) {
+			$color['r'] = hexdec( substr( $hex, 0, 2 ) );
+			$color['g'] = hexdec( substr( $hex, 2, 2 ) );
+			$color['b'] = hexdec( substr( $hex, 4, 2 ) );
 		}
-		else if ( strlen( $hex ) == 6 ) {
-				$color['r'] = hexdec( substr( $hex, 0, 2 ) );
-				$color['g'] = hexdec( substr( $hex, 2, 2 ) );
-				$color['b'] = hexdec( substr( $hex, 4, 2 ) );
-			}
 
 		return $color;
 	}
 }
 
 if ( !function_exists( 'RGBToHex' ) ) {
-	function RGBToHex( $r, $g, $b ) {
+	function RGBToHex( int $r, int $g, int $b ) : string {
 		//String padding bug found and the solution put forth by Pete Williams (http://snipplr.com/users/PeteW)
 		$hex = '#';
 		$hex .= str_pad( dechex( $r ), 2, '0', STR_PAD_LEFT );
@@ -140,7 +139,7 @@ if ( !function_exists( 'RGBToHex' ) ) {
 }
 
 if ( !function_exists( 'rgb2hsl' ) ) {
-	function rgb2hsl( $r, $g, $b ) {
+	function rgb2hsl( int $r, int $g, int $b ) : array {
 		$var_R = ( $r / 255 );
 		$var_G = ( $g / 255 );
 		$var_B = ( $b / 255 );
@@ -161,20 +160,27 @@ if ( !function_exists( 'rgb2hsl' ) ) {
 			$del_G = ( ( ( $var_Max - $var_G ) / 6 ) + ( $del_Max / 2 ) ) / $del_Max;
 			$del_B = ( ( ( $var_Max - $var_B ) / 6 ) + ( $del_Max / 2 ) ) / $del_Max;
 
-			if      ( $var_R == $var_Max ) $h = $del_B - $del_G;
-			else if ( $var_G == $var_Max ) $h = ( 1 / 3 ) + $del_R - $del_B;
-				else if ( $var_B == $var_Max ) $h = ( 2 / 3 ) + $del_G - $del_R;
-
-					if ( $h < 0 ) $h++;
-					if ( $h > 1 ) $h--;
+			if ( $var_R == $var_Max ) {
+				$h = $del_B - $del_G;
+			} else if ( $var_G == $var_Max ) {
+				$h = ( 1 / 3 ) + $del_R - $del_B;
+			} else if ( $var_B == $var_Max ) {
+				$h = ( 2 / 3 ) + $del_G - $del_R;
+			}
+			if ( $h < 0 ) {
+				$h++;
+			}
+			if ( $h > 1 ) {
+				$h--;
+			}
 		}
 
-		return array( $h, $s, $v );
+		return [ $h, $s, $v ];
 	}
 }
 
 if ( !function_exists( 'hsl2rgb' ) ) {
-	function hsl2rgb( $h, $s, $v ) {
+	function hsl2rgb( $h, $s, $v ) : array {
 		if ( $s == 0 ) {
 			$r = $g = $B = $v * 255;
 		} else {
